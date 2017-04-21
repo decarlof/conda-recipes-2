@@ -19,7 +19,7 @@
 #
 # Part of the "pyspec" package
 #
-
+from __future__ import print_function
 import numpy
 import time
 import struct
@@ -33,7 +33,7 @@ __id__        = "$Id$"
 
 def LCLSdataformat(iname, dataFormat = "142500f"):
     """function to read LCLS data.  no headers in this"""
-    print 'current image', iname
+    print('current image', iname)
     FH = open(iname, "rb")
     data = numpy.array(struct.unpack(dataFormat, FH.read()))
     FH.close()
