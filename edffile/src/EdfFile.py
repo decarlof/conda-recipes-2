@@ -86,6 +86,8 @@
       section is going to be translated into an 1D, 2D or 3D Numpy Array, and accessed
       through GetData method call.      
 """
+from __future__ import print_function
+
 __author__ = 'Alexandre Gobbo (gobbo@esrf.fr)'
 __version__ = '$Revision: 1.6 $'
 DEBUG = 0
@@ -210,7 +212,7 @@ class  EdfFile:
                 self.File.close()
             except:
                 pass
-            raise IOError, "EdfFile: Error opening file"
+            raise IOError("EdfFile: Error opening file")
 
         self.File.seek(0, 0)
         if self.MARCCD:
@@ -260,13 +262,13 @@ class  EdfFile:
                         line = self.File.readline()
                         continue
                 else:
-                    raise TypeError, "EdfFile: Image doesn't have size information"
+                    raise TypeError("EdfFile: Image doesn't have size information")
                 if "DIM_1" in StaticPar.keys():
                     self.Images[Index].Dim1 = string.atoi(StaticPar["DIM_1"])
                     self.Images[Index].Offset1 = string.atoi(\
                                             StaticPar.get("Offset_1", "0"))
                 else:
-                    raise TypeError, "EdfFile: Image doesn't have dimension information"
+                    raise TypeError("EdfFile: Image doesn't have dimension information")
                 if "DIM_2" in StaticPar.keys():
                     self.Images[Index].NumDim = 2
                     self.Images[Index].Dim2 = string.atoi(StaticPar["DIM_2"])
@@ -280,11 +282,11 @@ class  EdfFile:
                 if "DATATYPE" in StaticPar.keys():
                     self.Images[Index].DataType = StaticPar["DATATYPE"]
                 else:
-                    raise TypeError, "EdfFile: Image doesn't have datatype information"
+                    raise TypeError("EdfFile: Image doesn't have datatype information")
                 if "BYTEORDER" in StaticPar.keys():
                     self.Images[Index].ByteOrder = StaticPar["BYTEORDER"]
                 else:
-                    raise TypeError, "EdfFile: Image doesn't have byteorder information"
+                    raise TypeError("EdfFile: Image doesn't have byteorder information")
 
 
 
@@ -335,8 +337,8 @@ class  EdfFile:
                     numpy.fromstring(binary, numpy.uint16),
                     (self.Images[Index].Dim2, self.Images[Index].Dim1))
             except ValueError:
-                raise IOError, 'Size spec in ADSC-header does not match ' + \
-                    'size of image data field'
+                raise IOError('Size spec in ADSC-header does not match ' + \
+                    'size of image data field')
             if 'little' in header['BYTE_ORDER']:
                 self.Images[Index].ByteOrder = 'LowByteFirst'
             else:
@@ -442,7 +444,7 @@ class  EdfFile:
             If Pos and Size not mentioned, returns the whole data.                         
         """
         fastedf = self.fastedf
-        if Index < 0 or Index >= self.NumImages: raise ValueError, "EdfFile: Index out of limit"
+        if Index < 0 or Index >= self.NumImages: raise ValueError("EdfFile: Index out of limit")
         if fastedf is None:fastedf = 0
         if Pos is None and Size is None:
             if self.ADSC or self.MARCCD or self.PILATUS_CBF:
@@ -453,7 +455,7 @@ class  EdfFile:
                 try:
                     datasize = self.__GetSizeNumpyType__(datatype)
                 except TypeError:
-                    print "What is the meaning of this error?"
+                    print("What is the meaning of this error?")
                     datasize = 8
                 if self.Images[Index].NumDim == 3:
                     sizeToRead = self.Images[Index].Dim1 * \
@@ -467,13 +469,13 @@ class  EdfFile:
                                  self.Images[Index].Dim2 * datasize
                     Data = numpy.fromstring(self.File.read(sizeToRead),
                                 datatype)
-                    #print "datatype = ",datatype
-                    #print "Data.type = ", Data.dtype.char
-                    #print "self.Images[Index].DataType ", self.Images[Index].DataType
-                    #print "Data.shape",Data.shape
-                    #print "datasize = ",datasize
-                    #print "sizeToRead ",sizeToRead 
-                    #print "lenData = ", len(Data)
+                    #print("datatype = ",datatype)
+                    #print("Data.type = ", Data.dtype.char)
+                    #print("self.Images[Index].DataType ", self.Images[Index].DataType)
+                    #print("Data.shape",Data.shape)
+                    #print("datasize = ",datasize)
+                    #print("sizeToRead ",sizeToRead)
+                    #print("lenData = ", len(Data))
                     Data = numpy.reshape(Data, (self.Images[Index].Dim2, self.Images[Index].Dim1))
                 elif self.Images[Index].NumDim == 1:
                     sizeToRead = self.Images[Index].Dim1 * datasize
@@ -520,7 +522,7 @@ class  EdfFile:
                         numpy.array([ sizey * sizex * size_pixel , sizex * size_pixel]) , self.File)
 
         else:
-            if fastedf:print "I could not use fast routines"
+            if fastedf:print("I could not use fast routines")
             type = self.__GetDefaultNumpyType__(self.Images[Index].DataType, index=Index)
             size_pixel = self.__GetSizeNumpyType__(type)
             Data = numpy.array([], type)
@@ -539,8 +541,8 @@ class  EdfFile:
                 sizex, sizey = self.Images[Index].Dim1, self.Images[Index].Dim2
                 if Size[0] == 0:Size[0] = sizex - Pos[0]
                 if Size[1] == 0:Size[1] = sizey - Pos[1]
-                #print len(range(Pos[1],Pos[1]+Size[1])), "LECTURES OF ", Size[0], "POINTS"
-                #print "sizex = ", sizex, "sizey = ", sizey
+                #print(len(range(Pos[1],Pos[1]+Size[1])), "LECTURES OF ", Size[0], "POINTS")
+                #print("sizex = ", sizex, "sizey = ", sizey)
                 Data = numpy.zeros((Size[1], Size[0]), type)
                 dataindex = 0
                 for y in range(Pos[1], Pos[1] + Size[1]):
@@ -549,8 +551,8 @@ class  EdfFile:
                     Data[dataindex, :] = line[:]
                     #Data=numpy.concatenate((Data,line))
                     dataindex += 1
-                #print "DataSize = ",Data.shape
-                #print "Requested reshape = ",Size[1],'x',Size[0]
+                #print("DataSize = ",Data.shape)
+                #print("Requested reshape = ",Size[1],'x',Size[0])
                 #Data = numpy.reshape(Data, (Size[1],Size[0]))                            
             elif self.Images[Index].NumDim == 3:
                 if Pos == None: Pos = (0, 0, 0)
@@ -580,8 +582,8 @@ class  EdfFile:
             Index:      The zero-based index of the image in the file
             Position:   Tuple with the coordinete (x), (x,y) or (x,y,z)
         """
-        if Index < 0 or Index >= self.NumImages: raise ValueError, "EdfFile: Index out of limit"
-        if len(Position) != self.Images[Index].NumDim: raise ValueError, "EdfFile: coordinate with wrong dimension "
+        if Index < 0 or Index >= self.NumImages: raise ValueError("EdfFile: Index out of limit")
+        if len(Position) != self.Images[Index].NumDim: raise ValueError("EdfFile: coordinate with wrong dimension ")
 
         size_pixel = self.__GetSizeNumpyType__(self.__GetDefaultNumpyType__(self.Images[Index].DataType), index=Index)
         offset = Position[0] * size_pixel
@@ -606,7 +608,7 @@ class  EdfFile:
             method.
             Index:          The zero-based index of the image in the file
         """
-        if Index < 0 or Index >= self.NumImages: raise ValueError, "Index out of limit"
+        if Index < 0 or Index >= self.NumImages: raise ValueError("Index out of limit")
         #return self.Images[Index].Header
         ret = {}
         for i in self.Images[Index].Header.keys():
@@ -620,7 +622,7 @@ class  EdfFile:
             (dim1,dim2,size,datatype,byteorder,headerId,Image)
             Index:          The zero-based index of the image in the file
         """
-        if Index < 0 or Index >= self.NumImages: raise ValueError, "Index out of limit"
+        if Index < 0 or Index >= self.NumImages: raise ValueError("Index out of limit")
         #return self.Images[Index].StaticHeader
         ret = {}
         for i in self.Images[Index].StaticHeader.keys():
@@ -701,7 +703,7 @@ class  EdfFile:
                                      self.__GetSizeNumpyType__(Data.dtype))
             self.Images[Index].NumDim = 3
         elif len(Data.shape) > 3:
-            raise TypeError, "EdfFile: Data dimension not suported"
+            raise TypeError("EdfFile: Data dimension not suported")
 
 
         if DataType == "":
@@ -752,17 +754,17 @@ class  EdfFile:
 
     def __makeSureFileIsOpen(self):
         if DEBUG:
-            print "Making sure file is open"
+            print("Making sure file is open")
         if self.ADSC or self.MARCCD or self.PILATUS_CBF:
             if DEBUG:
-                print "Special case. Image is buffered"
+                print("Special case. Image is buffered")
             return
         if self.File in [0, None]:
             if DEBUG:
-                print "File is None"
+                print("File is None")
         elif self.File.closed:
             if DEBUG:
-                print "Reopening closed file"
+                print("Reopening closed file")
             accessMode = self.File.mode
             fileName = self.File.name
             newFile = open(fileName, accessMode)
@@ -771,17 +773,17 @@ class  EdfFile:
 
     def __makeSureFileIsClosed(self):
         if DEBUG:
-            print "Making sure file is closed"
+            print("Making sure file is closed")
         if self.ADSC or self.MARCCD or self.PILATUS_CBF:
             if DEBUG:
-                print "Special case. Image is buffered"
+                print("Special case. Image is buffered")
             return
         if self.File in [0, None]:
             if DEBUG:
-                print "File is None"
+                print("File is None")
         elif not self.File.closed:
             if DEBUG:
-                print "Closing file"
+                print("Closing file")
             self.File.close()
         return
 
@@ -814,7 +816,7 @@ class  EdfFile:
         elif NumpyType == numpy.uint64:                    return "Unsigned64"
         elif NumpyType in ["f", numpy.float32]:            return "FloatValue"
         elif NumpyType in ["d", numpy.float64]:            return "DoubleValue"
-        else: raise TypeError, "unknown NumpyType %s" % NumpyType
+        else: raise TypeError("unknown NumpyType %s" % NumpyType)
 
 
     def __GetSizeNumpyType__(self, NumpyType):
@@ -842,7 +844,7 @@ class  EdfFile:
         elif NumpyType == "q":            return 8 #signed 64 in 32 bit
         elif NumpyType == numpy.uint64:   return 8
         elif NumpyType == numpy.int64:    return 8
-        else: raise TypeError, "unknown NumpyType %s" % NumpyType
+        else: raise TypeError("unknown NumpyType %s" % NumpyType)
 
 
     def __SetDataType__ (self, Array, DataType):
@@ -913,7 +915,7 @@ def GetDefaultNumpyType(EdfType):
     elif EdfType == "FLOATVALUE":       return numpy.float32 # "f"
     elif EdfType == "FLOAT":            return numpy.float32 # "f"
     elif EdfType == "DOUBLEVALUE":      return numpy.float64 # "d"
-    else: raise TypeError, "unknown EdfType %s" % EdfType
+    else: raise TypeError("unknown EdfType %s" % EdfType)
 
 
 def SetDictCase(Dict, Case, Flag):
@@ -989,13 +991,13 @@ if __name__ == "__main__":
         del out #force to close the file
         inp2 = EdfFile("armando2.edf")
         c = inp2.GetData(0)
-        print "A SHAPE = ", a.shape
-        print "B SHAPE = ", b.shape
-        print "C SHAPE = ", c.shape
+        print("A SHAPE = ", a.shape)
+        print("B SHAPE = ", b.shape)
+        print("C SHAPE = ", c.shape)
         for i in range(5):
-            print "A", a[i, :]
-            print "B", b[i, :]
-            print "C", c[i, :]
+            print("A", a[i, :])
+            print("B", b[i, :])
+            print("C", c[i, :])
 
         x = numpy.arange(100)
         x.shape = 5, 20
